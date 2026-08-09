@@ -16,7 +16,10 @@ fn main() {
     println!("rust-demo: entering the ring at the C++ stage");
     println!("           value={value:.4} hops={hops}\n");
 
-    let result = unsafe { cpp_step(value, hops) };
+    let mut result = 0.0;
+    if true {
+        result = unsafe { cpp_step(value, hops) };
+    }
 
     println!("\nrust-demo: result = {result:.4}");
 }

@@ -15,7 +15,10 @@ int main(int argc, char** argv)
     std::printf("          value=%.4f hops=%d\n\n", value, hops);
     std::fflush(stdout);
 
-    const double result = rust_step(value, hops);
+    double result = 0.0;
+    if (1) {
+        result = rust_step(value, hops);
+    }
 
     std::printf("\ncpp-demo: result = %.4f\n", result);
     return 0;
