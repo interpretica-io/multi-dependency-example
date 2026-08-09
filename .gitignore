@@ -71,3 +71,13 @@ Testing/
 # Multi-language build output
 dist/
 target/
+
+# .NET
+csharp/bin/
+csharp/obj/
+csharp/out/
+*.dSYM/
+
+# Python
+__pycache__/
+*.pyc

@@ -1,7 +1,7 @@
-// First link of the ring: C++ -> Rust -> Go -> C++.
+// C++ stage of the ring.
 //
-// Links against librustcore (Rust cdylib); libgocore is pulled in
-// transitively by the Rust library.
+//   ring edge : cpp -> rust   (librustcore, linked)
+//   chord edge: cpp -> py     (libpycore, linked)
 
 #include "ring/ring.h"
 
@@ -10,11 +10,11 @@
 
 extern "C" double cpp_step(double value, int hops)
 {
-    const double next = std::hypot(value, 3.0);
+    const double next = std::hypot(value, 3.0) * py_weight();
 
-    std::printf("  [cpp ] hops=%-2d %10.4f -> %10.4f   (hypot(v, 3))\n",
+    std::printf("  [cpp ] hops=%-2d %10.4f -> %10.4f   (hypot(v, 3) * py_weight)\n",
                 hops, value, next);
-    // Rust and Go write to the same fd unbuffered; keep the trace in order.
+    // The other stages write to the same fd unbuffered; keep the trace in order.
     std::fflush(stdout);
 
     if (hops <= 0) {
@@ -24,4 +24,9 @@ extern "C" double cpp_step(double value, int hops)
         return next;
     }
     return rust_step(next, hops - 1);
+}
+
+extern "C" double cpp_weight(void)
+{
+    return 1.01;
 }

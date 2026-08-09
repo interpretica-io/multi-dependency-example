@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>cscore</AssemblyName>
+    <Nullable>enable</Nullable>
+
+    <!-- NativeAOT is what turns this project into a plain .dylib/.so that the
+         other languages can link against with a C ABI. -->
+    <PublishAot>true</PublishAot>
+    <NativeLib>Shared</NativeLib>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'1' == '1' AND $([MSBuild]::IsOSPlatform('OSX'))">
+    <LinkerArg Include="-Wl,-install_name,@rpath/libcscore.dylib" />
+  </ItemGroup>
+
+</Project>

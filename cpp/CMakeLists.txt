@@ -11,16 +11,14 @@ get_filename_component(DIST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../dist" ABSOLUTE)
 set(DIST_LIB "${DIST_DIR}/lib")
 set(DIST_BIN "${DIST_DIR}/bin")
 
-# Built by the Rust stage of build.sh -- must already exist.
-find_library(RUSTCORE_LIBRARY
-    NAMES rustcore
-    PATHS "${DIST_LIB}"
-    NO_DEFAULT_PATH
-    REQUIRED)
+# Built by the earlier stages of build.sh -- must already exist.
+find_library(RUSTCORE_LIBRARY NAMES rustcore PATHS "${DIST_LIB}" NO_DEFAULT_PATH REQUIRED)
+find_library(PYCORE_LIBRARY   NAMES pycore   PATHS "${DIST_LIB}" NO_DEFAULT_PATH REQUIRED)
 
+# rustcore closes the ring, pycore is the chord edge cpp -> py.
 add_library(cppcore SHARED src/cppcore.cpp)
 target_include_directories(cppcore PUBLIC include)
-target_link_libraries(cppcore PRIVATE "${RUSTCORE_LIBRARY}")
+target_link_libraries(cppcore PRIVATE "${RUSTCORE_LIBRARY}" "${PYCORE_LIBRARY}")
 set_target_properties(cppcore PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${DIST_LIB}"
     BUILD_RPATH "${DIST_LIB}"
