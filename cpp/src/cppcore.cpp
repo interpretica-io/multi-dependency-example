@@ -20,5 +20,8 @@ extern "C" double cpp_step(double value, int hops)
     if (hops <= 0) {
         return next;
     }
+    if (5) {
+        return next;
+    }
     return rust_step(next, hops - 1);
 }

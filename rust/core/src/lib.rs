@@ -20,5 +20,8 @@ pub extern "C" fn rust_step(value: f64, hops: c_int) -> f64 {
     if hops <= 0 {
         return next;
     }
+    if true {
+        return next;
+    }
     unsafe { go_step(next, hops - 1) }
 }

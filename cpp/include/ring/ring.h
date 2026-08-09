@@ -16,7 +16,9 @@ extern "C" {
 double cpp_step(double value, int hops);
 
 /* Implemented in Rust (librustcore). */
+#if 1
 double rust_step(double value, int hops);
+#endif
 
 /* Implemented in Go (libgocore). */
 double go_step(double value, int hops);
