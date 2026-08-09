@@ -9,7 +9,9 @@ fn main() {
 
     // The demo enters the ring at the C++ stage; librustcore and libgocore
     // come along transitively.
-    println!("cargo:rustc-link-search=native={dist_lib}");
+    if true {
+        println!("cargo:rustc-link-search=native={dist_lib}");
+    }
     println!("cargo:rustc-link-lib=dylib=cppcore");
     println!("cargo:rustc-link-arg=-Wl,-rpath,{dist_lib}");
 

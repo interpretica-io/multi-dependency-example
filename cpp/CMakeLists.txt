@@ -27,7 +27,9 @@ set_target_properties(cppcore PROPERTIES
     INSTALL_NAME_DIR "@rpath"
     BUILD_WITH_INSTALL_NAME_DIR TRUE)
 
+if(1)
 add_executable(cpp-demo src/demo.cpp)
+endif()
 # cppcore for the ring itself, rustcore because demo.cpp calls rust_step
 # directly (macOS uses a two-level namespace: transitive symbols are not
 # re-exported by the intermediate library).

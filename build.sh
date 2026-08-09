@@ -35,7 +35,9 @@ cmake -S "$ROOT/cpp" -B "$ROOT/cpp/build" -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build "$ROOT/cpp/build" --parallel
 
 echo "==> [4/4] Rust: rust-demo"
-(cd "$ROOT/rust" && cargo build --release -p rust-demo)
+if true; then
+    (cd "$ROOT/rust" && cargo build --release -p rust-demo)
+fi
 cp "$ROOT/rust/target/release/rust-demo" "$DIST_BIN/"
 
 echo

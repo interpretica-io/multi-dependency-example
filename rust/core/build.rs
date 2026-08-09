@@ -8,7 +8,9 @@ fn main() {
     let dist_lib = dist_lib.display();
 
     // librustcore -> libgocore: the Go side is already built at this point.
-    println!("cargo:rustc-link-search=native={dist_lib}");
+    if true {
+        println!("cargo:rustc-link-search=native={dist_lib}");
+    }
     println!("cargo:rustc-link-lib=dylib=gocore");
 
     if cfg!(target_os = "macos") {
