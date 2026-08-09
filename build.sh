@@ -6,6 +6,11 @@
 #   2. Rust -> librustcore  (links libgocore)
 #   3. C++  -> libcppcore   (links librustcore, closes the cycle for dyld)
 #   4. Demo executables
+#
+# Usage:
+#   ./build.sh          build everything
+#   ./build.sh clean    remove all build output
+#   ./build.sh rebuild  clean, then build
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,6 +20,39 @@ DIST_BIN="$ROOT/dist/bin"
 case "$(uname -s)" in
     Darwin) DYLIB_EXT="dylib" ;;
     *)      DYLIB_EXT="so" ;;
+esac
+
+clean() {
+    echo "==> clean"
+    # Per-toolchain caches: let each tool remove what it knows about.
+    if command -v cargo >/dev/null; then
+        (cd "$ROOT/rust" && cargo clean)
+    fi
+    if command -v go >/dev/null; then
+        (cd "$ROOT/go" && go clean)
+    fi
+    if [ -d "$ROOT/cpp/build" ]; then
+        cmake --build "$ROOT/cpp/build" --target clean >/dev/null 2>&1 || true
+    fi
+    # Anything the tools do not own: the CMake tree and the shared dist/.
+    rm -rf "$ROOT/cpp/build" "$ROOT/dist"
+    echo "    removed cpp/build, dist, rust/target"
+}
+
+case "${1:-build}" in
+    clean)
+        clean
+        exit 0
+        ;;
+    rebuild)
+        clean
+        echo
+        ;;
+    build) ;;
+    *)
+        echo "usage: $0 [build|clean|rebuild]" >&2
+        exit 2
+        ;;
 esac
 
 mkdir -p "$DIST_LIB" "$DIST_BIN"

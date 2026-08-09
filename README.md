@@ -27,11 +27,16 @@ double go_step  (double value, int hops);   /* Go   */
 Нужны `cargo`, `go` и `cmake` + компилятор C++17.
 
 ```sh
-./build.sh
+./build.sh              # сборка
+./build.sh clean        # удалить всё собранное
+./build.sh rebuild      # clean + сборка
 
 ./dist/bin/cpp-demo   1 6     # входит в кольцо со стадии Rust
 ./dist/bin/rust-demo  2 8     # входит в кольцо со стадии C++
 ```
+
+`clean` отдаёт очистку самим тулчейнам (`cargo clean`, `go clean`, цель `clean`
+у CMake), а затем сносит `cpp/build` и общий `dist/`.
 
 Вывод `cpp-demo 1 6`:
 
@@ -50,7 +55,6 @@ cpp-demo: entering the ring at the Rust stage
 cpp-demo: result = 22.5998
 ```
 
-Очистка: `rm -rf dist cpp/build rust/target`.
 
 ## Как вообще собирается цикл
 
@@ -88,7 +92,7 @@ rust/demo/              rust-demo   — входит в кольцо через 
 cpp/include/ring/ring.h общий C ABI кольца
 cpp/src/cppcore.cpp     libcppcore  — cpp_step, вызывает rust_step
 cpp/src/demo.cpp        cpp-demo    — входит в кольцо через rust_step
-build.sh                сборка в правильном порядке, артефакты в dist/
+build.sh                сборка в правильном порядке + clean/rebuild, вывод в dist/
 ```
 
 Все библиотеки складываются в `dist/lib`, чтобы каждому тулчейну хватило одного
