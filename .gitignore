@@ -27,6 +27,13 @@
 # Fortran module files
 *.mod
 *.smod
+# ...but Go's module manifest is not one of them. Without this the ring's Go
+# stage has no module in a fresh clone, `go build` searches upward, finds the
+# repository root instead, and the build dies at stage 3 of 6 — which reads as
+# "the analyzer found nothing" rather than "four fifths of the ring never
+# compiled".
+!go.mod
+!go.sum
 
 # Compiled Static libraries
 *.lai
