@@ -13,6 +13,10 @@
 #
 # Usage:
 #   ./build.sh          build everything
+#
+# RING_SKIP_CSHARP=1 replaces stage 2 with a C stub of the same ABI, for hosts
+# without a .NET toolchain — or for an analyzer that cannot read C#. The cycle
+# stays closed and the demos still run; the C# stage is simply not C# any more.
 #   ./build.sh clean    remove all build output
 #   ./build.sh rebuild  clean, then build
 set -euo pipefail
@@ -74,6 +78,16 @@ cc -shared -fPIC -O2 \
     $(python3-config --ldflags --embed) \
     -Wl,-install_name,@rpath/libpycore."$DYLIB_EXT"
 
+# The C# stage can be stood in for — see csharp/stub/cscore_stub.c. Set when
+# the toolchain is unavailable, or when the analyzer cannot read C# because its
+# distribution was built without visao-roslyn-helper.
+if [ -n "${RING_SKIP_CSHARP:-}" ]; then
+echo "==> [2/6] C#: SKIPPED — building the C stub instead (RING_SKIP_CSHARP)"
+cc -shared -fPIC -O2 \
+    "$ROOT/csharp/stub/cscore_stub.c" \
+    -o "$DIST_LIB/libcscore.$DYLIB_EXT" \
+    -Wl,-install_name,@rpath/libcscore."$DYLIB_EXT"
+else
 echo "==> [2/6] C#: libcscore.$DYLIB_EXT"
 CS_ARGS=(-c Release -o "$ROOT/csharp/out" --nologo -v quiet)
 if [ "$DYLIB_EXT" = "dylib" ]; then
@@ -88,6 +102,7 @@ if [ "$DYLIB_EXT" = "dylib" ]; then
 fi
 dotnet publish "$ROOT/csharp/cscore.csproj" "${CS_ARGS[@]}"
 cp "$ROOT/csharp/out/cscore.$DYLIB_EXT" "$DIST_LIB/libcscore.$DYLIB_EXT"
+fi
 
 echo "==> [3/6] Go: libgocore.$DYLIB_EXT"
 # cgo rejects "unusual" linker flags unless they are explicitly allowed;
