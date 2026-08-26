@@ -1,0 +1,19 @@
+# The web tier's single source of truth: three HTTP services that call each
+# other in a cycle and each reach into the ring through a different binding
+# mechanism.
+#
+# Four projects read this exact file, each at a different moment:
+#
+#   web/gateway-rs      include_str! -- compiled into the binary   (Rust)
+#   web/service-go      path baked in with -X at link time         (Go)
+#   web/service-cs      <EmbeddedResource> -- read from the image  (C#)
+#   web/tools/probe.py  plain open() at runtime                    (Python)
+#
+# The format is deliberately dumb -- whitespace-separated columns, '#' starts a
+# comment -- so that all four parsers fit in a dozen lines and none of them
+# needs a dependency. Changing a port here changes it in four languages.
+#
+# name        port  upstream     ring_lib     ring_symbol
+gateway-rs    8081  service-go   librustcore  rust_step
+service-go    8082  service-cs   libcscore    cs_weight
+service-cs    8083  gateway-rs   libcppcore   cpp_weight

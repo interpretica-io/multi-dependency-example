@@ -1,0 +1,15 @@
+[package]
+name = "gateway-rs"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Its own workspace root on purpose: ../../rust is a separate workspace, and
+# the gateway must not be pulled into the build of the ring itself. It reaches
+# librustcore the same way every other node of the ring does -- through the C
+# ABI, not through a Cargo dependency.
+[workspace]
+
+[[bin]]
+name = "gateway-rs"
+path = "src/main.rs"

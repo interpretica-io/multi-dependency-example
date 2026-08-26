@@ -83,6 +83,9 @@ target/
 csharp/bin/
 csharp/obj/
 csharp/out/
+web/service-cs/bin/
+web/service-cs/obj/
+web/service-cs/out/
 *.dSYM/
 
 # Python

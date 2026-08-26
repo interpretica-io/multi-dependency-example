@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>service-cs</AssemblyName>
+    <RootNamespace>ServiceCs</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Same NativeAOT trick as csharp/cscore.csproj, but this one produces an
+         executable: the whole web tier then lives in dist/bin next to the
+         demos, with no `dotnet` runtime needed to start it. -->
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- The build-time edge to the shared contract: the same services.tab that
+       gateway-rs pulls in with include_str! and service-go reads at startup is
+       compiled into this assembly as a resource. -->
+  <ItemGroup Condition="'1' == '1'">
+    <EmbeddedResource Include="../contract/services.tab" LogicalName="services.tab" />
+  </ItemGroup>
+
+</Project>
