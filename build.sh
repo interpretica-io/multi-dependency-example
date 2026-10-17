@@ -32,9 +32,14 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_LIB="$ROOT/dist/lib"
 DIST_BIN="$ROOT/dist/bin"
 
+# The flag that stamps a shared library with the name its consumers record is
+# spelled differently per platform: macOS uses -install_name (and an @rpath
+# anchor), the GNU toolchain uses -soname. The native -buildmode=c-shared
+# (Go), cargo (Rust) and csproj (C#) stages already branch on the OS
+# themselves; these shell variables let the raw `cc` stages below do the same.
 case "$(uname -s)" in
-    Darwin) DYLIB_EXT="dylib" ;;
-    *)      DYLIB_EXT="so" ;;
+    Darwin) DYLIB_EXT="dylib"; SONAME_PREFIX="-install_name,@rpath/" ;;
+    *)      DYLIB_EXT="so";    SONAME_PREFIX="-soname," ;;
 esac
 
 clean() {
@@ -92,7 +97,7 @@ cc -shared -fPIC -O2 \
     "$ROOT/python/src/pycore.c" \
     -o "$DIST_LIB/libpycore.$DYLIB_EXT" \
     $(python3-config --ldflags --embed) \
-    -Wl,-install_name,@rpath/libpycore."$DYLIB_EXT"
+    -Wl,"${SONAME_PREFIX}"libpycore."$DYLIB_EXT"
 
 # The C# stage can be stood in for — see csharp/stub/cscore_stub.c. Set when
 # the toolchain is unavailable, or when the analyzer cannot read C# because its
@@ -102,7 +107,7 @@ echo "==> [2/9] C#: SKIPPED — building the C stub instead (RING_SKIP_CSHARP)"
 cc -shared -fPIC -O2 \
     "$ROOT/csharp/stub/cscore_stub.c" \
     -o "$DIST_LIB/libcscore.$DYLIB_EXT" \
-    -Wl,-install_name,@rpath/libcscore."$DYLIB_EXT"
+    -Wl,"${SONAME_PREFIX}"libcscore."$DYLIB_EXT"
 else
 echo "==> [2/9] C#: libcscore.$DYLIB_EXT"
 CS_ARGS=(-c Release -o "$ROOT/csharp/out" --nologo -v quiet)
