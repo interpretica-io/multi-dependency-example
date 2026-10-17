@@ -37,9 +37,23 @@ DIST_BIN="$ROOT/dist/bin"
 # anchor), the GNU toolchain uses -soname. The native -buildmode=c-shared
 # (Go), cargo (Rust) and csproj (C#) stages already branch on the OS
 # themselves; these shell variables let the raw `cc` stages below do the same.
+# The C# NativeAOT stages need an explicit RuntimeIdentifier on every platform
+# (NativeLib=Shared cannot infer one), so pick the matching .NET RID here too.
 case "$(uname -s)" in
-    Darwin) DYLIB_EXT="dylib"; SONAME_PREFIX="-install_name,@rpath/" ;;
-    *)      DYLIB_EXT="so";    SONAME_PREFIX="-soname," ;;
+    Darwin)
+        DYLIB_EXT="dylib"; SONAME_PREFIX="-install_name,@rpath/"
+        case "$(uname -m)" in
+            arm64) DOTNET_RID="osx-arm64" ;;
+            *)     DOTNET_RID="osx-x64" ;;
+        esac
+        ;;
+    *)
+        DYLIB_EXT="so"; SONAME_PREFIX="-soname,"
+        case "$(uname -m)" in
+            aarch64|arm64) DOTNET_RID="linux-arm64" ;;
+            *)             DOTNET_RID="linux-x64" ;;
+        esac
+        ;;
 esac
 
 clean() {
@@ -110,12 +124,8 @@ cc -shared -fPIC -O2 \
     -Wl,"${SONAME_PREFIX}"libcscore."$DYLIB_EXT"
 else
 echo "==> [2/9] C#: libcscore.$DYLIB_EXT"
-CS_ARGS=(-c Release -o "$ROOT/csharp/out" --nologo -v quiet)
+CS_ARGS=(-c Release -o "$ROOT/csharp/out" --nologo -v quiet -r "$DOTNET_RID")
 if [ "$DYLIB_EXT" = "dylib" ]; then
-    case "$(uname -m)" in
-        arm64) CS_ARGS+=(-r osx-arm64) ;;
-        *)     CS_ARGS+=(-r osx-x64) ;;
-    esac
     # ILCompiler shells out to "clang". Pin it to the /usr/bin driver: it picks
     # up the selected SDK, whereas a stray clang config file (Homebrew LLVM has
     # one) can point the link at an SDK that is not installed.
@@ -168,12 +178,8 @@ if [ -n "${RING_SKIP_CSHARP:-}" ]; then
 echo "==> [9/9] C#: SKIPPED -- service-cs needs the .NET toolchain (RING_SKIP_CSHARP)"
 else
 echo "==> [9/9] C#: service-cs (web tier)"
-WEB_CS_ARGS=(-c Release -o "$ROOT/web/service-cs/out" --nologo -v quiet)
+WEB_CS_ARGS=(-c Release -o "$ROOT/web/service-cs/out" --nologo -v quiet -r "$DOTNET_RID")
 if [ "$DYLIB_EXT" = "dylib" ]; then
-    case "$(uname -m)" in
-        arm64) WEB_CS_ARGS+=(-r osx-arm64) ;;
-        *)     WEB_CS_ARGS+=(-r osx-x64) ;;
-    esac
     WEB_CS_ARGS+=(-p:CppCompilerAndLinker=/usr/bin/clang)
 fi
 dotnet publish "$ROOT/web/service-cs/webcs.csproj" "${WEB_CS_ARGS[@]}"
