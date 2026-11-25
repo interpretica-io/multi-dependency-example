@@ -91,3 +91,6 @@ web/service-cs/out/
 # Python
 __pycache__/
 *.pyc
+
+# Node / TypeScript
+node_modules/
