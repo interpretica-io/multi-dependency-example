@@ -284,3 +284,17 @@ every toolchain, and the executables go into `dist/bin` with an rpath to
   at the very first stage when it runs, and in the web tier each node answers
   only for itself (the condition in `forward` cuts off the hop to the upstream).
   The reference outputs above were taken from the code without these defects.
+
+### TypeScript node
+
+`web/service-ts` is a pure Node.js implementation of the same `GET /ring`
+contract (stage 10 of `./build.sh`; needs `node` and `npm`). It has no ring
+library, so its weight is a constant. Configuration is by environment:
+`SERVICE_TS_HOST` (default `127.0.0.1`), `SERVICE_TS_PORT` (default `8084`),
+`SERVICE_TS_UPSTREAM` (`host:port`, default the gateway-rs port from the
+contract) and `SERVICE_TS_CONTRACT`. Bad `value`/`hops` get a `400` reply
+starting with `error:`; nothing thrown while serving ends the process.
+
+```sh
+./scripts/run.sh guess              # builds if needed, runs service-ts
+```

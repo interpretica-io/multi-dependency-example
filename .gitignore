@@ -86,6 +86,10 @@ csharp/out/
 web/service-cs/bin/
 web/service-cs/obj/
 web/service-cs/out/
+
+# Node
+node_modules/
+web/service-ts/out/
 *.dSYM/
 
 # Python

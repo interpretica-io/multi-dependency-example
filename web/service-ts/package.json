@@ -1,0 +1,19 @@
+{
+  "name": "service-ts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TypeScript node of the web tier: GET /ring, same contract as service-go and service-cs",
+  "license": "UNLICENSED",
+  "main": "out/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node out/main.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "typescript": "^5.4.0"
+  }
+}
