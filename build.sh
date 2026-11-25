@@ -79,7 +79,7 @@ clean() {
            "$ROOT/csharp/bin" "$ROOT/csharp/obj" "$ROOT/csharp/out" \
            "$ROOT/web/service-cs/bin" "$ROOT/web/service-cs/obj" \
            "$ROOT/web/service-cs/out" \
-           "$ROOT/src/typescript/dist" "$ROOT/src/typescript/node_modules" \
+           "$ROOT/typescript/dist" "$ROOT/typescript/node_modules" \
            "$ROOT/python/__pycache__" "$ROOT/web/tools/__pycache__"
     echo "    removed cpp/build, dist, rust/target, csharp/{bin,obj,out},"
     echo "            web/gateway-rs/target, web/service-cs/{bin,obj,out}, __pycache__"
@@ -187,17 +187,17 @@ dotnet publish "$ROOT/web/service-cs/webcs.csproj" "${WEB_CS_ARGS[@]}"
 cp "$ROOT/web/service-cs/out/service-cs" "$DIST_BIN/"
 fi
 
-echo "==> [10/10] TypeScript: TypeScript example (src/typescript)"
+echo "==> [10/10] TypeScript: TypeScript example (typescript)"
 if ! command -v npm >/dev/null; then
     echo "build.sh: npm is required for the TypeScript example" >&2
     exit 1
 fi
-if [ -f "$ROOT/src/typescript/package-lock.json" ]; then
-    (cd "$ROOT/src/typescript" && npm ci --no-audit --no-fund)
+if [ -f "$ROOT/typescript/package-lock.json" ]; then
+    (cd "$ROOT/typescript" && npm ci --no-audit --no-fund)
 else
-    (cd "$ROOT/src/typescript" && npm install --no-audit --no-fund)
+    (cd "$ROOT/typescript" && npm install --no-audit --no-fund)
 fi
-(cd "$ROOT/src/typescript" && npx --no-install tsc -p tsconfig.json)
+(cd "$ROOT/typescript" && npx --no-install tsc -p tsconfig.json)
 
 echo
 echo "Done. Artifacts in dist/:"

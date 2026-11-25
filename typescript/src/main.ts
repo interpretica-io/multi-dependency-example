@@ -4,7 +4,7 @@
 //   ring-ts guess [value] [hops]
 //
 // The gateway address comes from RING_GATEWAY_URL (e.g. http://host:port);
-// default http://127.0.0.1:8081 (the gateway-rs port in web/contract/services.tab).
+// it has no default: when unset the command exits with a usage error.
 // The optional RING_TIMEOUT_MS bounds every network call (default 5000 ms).
 
 const EXIT_OK = 0;
@@ -14,7 +14,6 @@ const EXIT_USAGE = 2;
 const MAX_HOPS = 1000;
 const MAX_BODY = 1 << 20;
 const DEFAULT_TIMEOUT_MS = 5000;
-const DEFAULT_GATEWAY_URL = "http://127.0.0.1:8081";
 const MAX_TIMEOUT_MS = 60000;
 
 class UsageError extends Error {}
@@ -57,7 +56,7 @@ function parseTimeout(raw: string | undefined): number {
 
 function gatewayUrl(raw: string | undefined): URL {
   if (raw === undefined || raw === "") {
-    raw = DEFAULT_GATEWAY_URL;
+    throw new UsageError("RING_GATEWAY_URL is not set (expected e.g. scheme://host:port)");
   }
   let u: URL;
   try {
