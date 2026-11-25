@@ -5,7 +5,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MAIN="$ROOT/src/ts/dist/main.js"
+MAIN="$ROOT/src/typescript/dist/index.js"
 
 if [ ! -f "$MAIN" ]; then
     echo "run.sh: $MAIN not found; run ./build.sh first" >&2
