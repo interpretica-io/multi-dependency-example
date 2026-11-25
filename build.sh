@@ -206,7 +206,7 @@ echo
 echo "Run:  ./dist/bin/cpp-demo    [value] [hops]"
 echo "      ./dist/bin/rust-demo   [value] [hops]"
 echo "      python3 python/demo.py [value] [hops]"
-echo "      ./scripts/run.sh guess [value] [hops]   (TypeScript; RING_GATEWAY_URL)"
+echo "      ./scripts/run.sh guess [value] [hops]   (TypeScript; RING_GATEWAY_URL, RING_TIMEOUT_MS)"
 echo
 echo "Web tier (each in its own shell, then probe them):"
 echo "      ./dist/bin/gateway-rs"
