@@ -191,7 +191,16 @@ if ! command -v npm >/dev/null; then
     echo "build.sh: npm not found; Node.js >= 18 and npm are required for typescript/" >&2
     exit 1
 fi
+node_major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
+if [ "$node_major" -lt 18 ]; then
+    echo "build.sh: Node.js >= 18 is required for typescript/ (found $node_major)" >&2
+    exit 1
+fi
 (cd "$ROOT/typescript" && npm install --no-audit --no-fund && npm run build)
+if [ ! -f "$ROOT/typescript/dist/index.js" ]; then
+    echo "build.sh: typescript/dist/index.js was not produced" >&2
+    exit 1
+fi
 
 echo
 echo "Done. Artifacts in dist/:"

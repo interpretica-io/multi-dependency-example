@@ -40,14 +40,14 @@ function buildUrl(endpoint: string, value: number, hops: number): URL {
 }
 
 // Splits a ring body into its trace and the final value, as the Go node does.
-function parseBody(raw: string): { trace: string[]; value: number } {
+function parseBody(raw: string): { trace: string[]; value: string } {
   const trace: string[] = [];
-  let value: number | undefined;
+  let value: string | undefined;
   for (const line of raw.split("\n")) {
     if (line.startsWith("value=")) {
-      const parsed = Number(line.slice("value=".length).trim());
-      if (!Number.isFinite(parsed)) throw new Error(`bad value line: ${line}`);
-      value = parsed;
+      const text = line.slice("value=".length).trim();
+      if (!Number.isFinite(Number(text)) || text === "") throw new Error(`bad value line: ${line}`);
+      value = text; // echoed verbatim, as the node formatted it
     } else if (line !== "") {
       trace.push(line);
     }
