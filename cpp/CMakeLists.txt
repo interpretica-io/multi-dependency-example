@@ -31,7 +31,15 @@ endif()
 # cppcore for the ring itself, rustcore because demo.cpp calls rust_step
 # directly (macOS uses a two-level namespace: transitive symbols are not
 # re-exported by the intermediate library).
-target_link_libraries(cpp-demo PRIVATE cppcore "${RUSTCORE_LIBRARY}")
+# libgocore (reached through rustcore) leaves cpp_weight undefined and expects
+# cppcore to provide it. The demo uses nothing from cppcore directly, so on GNU
+# ld --as-needed would drop it and the link would fail; keep it on Linux.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(cpp-demo PRIVATE
+        -Wl,--no-as-needed cppcore -Wl,--as-needed "${RUSTCORE_LIBRARY}")
+else()
+    target_link_libraries(cpp-demo PRIVATE cppcore "${RUSTCORE_LIBRARY}")
+endif()
 set_target_properties(cpp-demo PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${DIST_BIN}"
     BUILD_RPATH "${DIST_LIB}")
