@@ -81,6 +81,7 @@ clean() {
            "$ROOT/web/service-cs/bin" "$ROOT/web/service-cs/obj" \
            "$ROOT/web/service-cs/out" \
            "$ROOT/web/service-ts/out" "$ROOT/web/service-ts/node_modules" \
+           "$ROOT/ts/dist" "$ROOT/ts/node_modules" \
            "$ROOT/python/__pycache__" "$ROOT/web/tools/__pycache__"
     echo "    removed cpp/build, dist, rust/target, csharp/{bin,obj,out},"
     echo "            web/gateway-rs/target, web/service-cs/{bin,obj,out}, web/service-ts/{out,node_modules}, __pycache__"
@@ -198,6 +199,9 @@ exec node "$ROOT/web/service-ts/out/main.js" "\$@"
 LAUNCHER
 chmod +x "$DIST_BIN/service-ts"
 
+echo "==> TypeScript: ts example (npm install + tsc)"
+(cd "$ROOT/ts" && npm install --no-audit --no-fund && npx tsc)
+
 echo
 echo "Done. Artifacts in dist/:"
 ls -1 "$DIST_LIB" "$DIST_BIN"
@@ -211,4 +215,5 @@ echo "      ./dist/bin/gateway-rs"
 echo "      ./dist/bin/service-go"
 echo "      ./dist/bin/service-cs"
 echo "      ./dist/bin/service-ts   (SERVICE_TS_HOST / SERVICE_TS_PORT, default 127.0.0.1:8084)"
+echo "      (cd ts && node dist/main.js)   (EXAMPLE_HOST / EXAMPLE_PORT, default 127.0.0.1:9100)"
 echo "      python3 web/tools/probe.py [service] [value] [hops]"

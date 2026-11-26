@@ -1,0 +1,17 @@
+{
+  "name": "example-ts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TypeScript example: GET /ring, same contract as the Go and C# web services",
+  "license": "UNLICENSED",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "engines": { "node": ">=18" },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "typescript": "^5.4.0"
+  }
+}

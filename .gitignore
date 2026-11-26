@@ -90,6 +90,7 @@ web/service-cs/out/
 # Node
 node_modules/
 web/service-ts/out/
+ts/dist/
 *.dSYM/
 
 # Python
