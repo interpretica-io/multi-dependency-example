@@ -50,10 +50,6 @@ internal static unsafe class RingStage
         {
             return next;
         }
-        if (true)
-        {
-            return next;
-        }
         return _pyStep(next, hops - 1);
     }
 

@@ -33,8 +33,6 @@ def step(value, hops):
 
     if hops <= 0:
         return nxt
-    if True:
-        return nxt
     return _cpp_step(nxt, hops - 1)
 
 

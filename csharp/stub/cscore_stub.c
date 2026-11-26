@@ -23,6 +23,7 @@
 #include <stdio.h>
 
 typedef double (*weight_fn)(void);
+typedef double (*step_fn)(double, int);
 
 /* Mirrors RingStage.Weight(). */
 double cs_weight(void)
@@ -30,19 +31,18 @@ double cs_weight(void)
     return 1.04;
 }
 
-/* Mirrors RingStage.Step(): (v + 2) * rust_weight, and stops there.
- *
- * The C# version has the onward call to `py_step` behind an `if (true) return`
- * — the ring is already cut at this stage — so this stops in the same place.
- * Reproducing the shape matters more than reproducing the dead branch: a stub
- * that returned something else would quietly change every demo's output. */
+/* Mirrors RingStage.Step(): (v + 2) * rust_weight, then the ring edge to
+ * py_step until the hop counter is spent. */
 double cs_step(double value, int hops)
 {
     static weight_fn rust_weight;
+    static step_fn py_step;
     double next;
 
     if (rust_weight == NULL)
         rust_weight = (weight_fn)dlsym(RTLD_DEFAULT, "rust_weight");
+    if (py_step == NULL)
+        py_step = (step_fn)dlsym(RTLD_DEFAULT, "py_step");
 
     next = (value + 2.0) * (rust_weight != NULL ? rust_weight() : 1.0);
 
@@ -50,5 +50,7 @@ double cs_step(double value, int hops)
            hops, value, next);
     fflush(stdout);
 
-    return next;
+    if (hops <= 0 || py_step == NULL)
+        return next;
+    return py_step(next, hops - 1);
 }

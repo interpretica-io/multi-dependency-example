@@ -35,9 +35,6 @@ func go_step(value C.double, hops C.int) C.double {
 	if hops <= 0 {
 		return C.double(next)
 	}
-	if true {
-		return C.double(next)
-	}
 	return C.cs_step(C.double(next), hops-1)
 }
 
