@@ -280,20 +280,22 @@ every toolchain, and the executables go into `dist/bin` with an rpath to
   explicitly.
 * **One trivial error was injected deliberately into every source file** (always
   an always-true condition such as `if (5)` / `if true`). The repository is used
-  as a corpus for testing review tools. Because of these errors the ring stops
-  at the very first stage when it runs, and in the web tier each node answers
-  only for itself (the condition in `forward` cuts off the hop to the upstream).
-  The reference outputs above were taken from the code without these defects.
+  as a corpus for testing review tools. The always-true early returns that cut
+  the ring after the first stage in the five ring stages are removed; the
+  remaining always-true wrappers are harmless.
 
 ### TypeScript node
 
 `web/service-ts` is a pure Node.js implementation of the same `GET /ring`
 contract (stage 10 of `./build.sh`; needs `node` and `npm`). It has no ring
 library, so its weight is a constant. Configuration is by environment:
-`SERVICE_TS_HOST` (default `127.0.0.1`), `SERVICE_TS_PORT` (default `8084`),
-`SERVICE_TS_UPSTREAM` (`host:port`, default the gateway-rs port from the
-contract) and `SERVICE_TS_CONTRACT`. Bad `value`/`hops` get a `400` reply
-starting with `error:`; nothing thrown while serving ends the process.
+`RING_HOST` and `RING_PORT` give the listen address and are both required (an
+unset one prints one error line and exits 1 at once, no default),
+`SERVICE_TS_UPSTREAM` (`host:port`, default `RING_HOST` with the gateway-rs
+port from the contract) and `SERVICE_TS_CONTRACT`. Every network call has a
+5 s connect timeout and a 5 s read timeout. Bad `value`/`hops` get a `400`
+reply starting with `error:`; nothing thrown while serving a request ends the
+process, and any other error prints one line and exits 1.
 
 ```sh
 ./scripts/run.sh guess              # builds if needed, runs service-ts

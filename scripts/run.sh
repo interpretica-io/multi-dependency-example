@@ -9,11 +9,24 @@
 #
 # The ts server reads RING_HOST / RING_PORT (both required).
 #
-# The TypeScript node reads SERVICE_TS_HOST / SERVICE_TS_PORT
-# (default 127.0.0.1:8084).
+# The TypeScript node (service-ts) reads RING_HOST / RING_PORT too (both
+# required).
+#
+# RING_HOST and RING_PORT are checked before anything is built: a missing one
+# is an immediate error, not the end of a full build.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+need_ring_env() {
+    local name
+    for name in RING_HOST RING_PORT; do
+        if [ -z "${!name:-}" ]; then
+            echo "run.sh: error: $name is not set" >&2
+            exit 1
+        fi
+    done
+}
 
 case "${1:-}" in
     guess)
@@ -21,6 +34,7 @@ case "${1:-}" in
         case "$service" in
             gateway-rs|service-go|service-cs|service-ts) ;;
             serve)
+                need_ring_env
                 if [ ! -f "$ROOT/ts/dist/main.js" ]; then
                     "$ROOT/build.sh"
                 fi
@@ -35,6 +49,9 @@ case "${1:-}" in
                 exec node dist/demo.js "${@:2}"
                 ;;
         esac
+        if [ "$service" = "service-ts" ]; then
+            need_ring_env
+        fi
         if [ ! -x "$ROOT/dist/bin/$service" ]; then
             "$ROOT/build.sh"
         fi
