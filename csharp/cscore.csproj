@@ -13,6 +13,11 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="demo/**" />
+    <Compile Remove="out/**" />
+  </ItemGroup>
+
   <ItemGroup Condition="'1' == '1' AND $([MSBuild]::IsOSPlatform('OSX'))">
     <LinkerArg Include="-Wl,-install_name,@rpath/libcscore.dylib" />
   </ItemGroup>

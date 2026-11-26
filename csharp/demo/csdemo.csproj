@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>cs-demo</AssemblyName>
+    <Nullable>enable</Nullable>
+    <PublishAot>true</PublishAot>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- The ring libraries are linked into the executable, so every symbol the
+       stages look up by name is already in the process. DistLib comes from
+       build.sh. -->
+  <ItemGroup>
+    <DirectPInvoke Include="cscore" />
+    <LinkerArg Include="-L$(DistLib)" />
+    <LinkerArg Include="-lcscore -lcppcore -lrustcore -lgocore -lpycore" />
+    <LinkerArg Include="-Wl,-rpath,$(DistLib)" />
+  </ItemGroup>
+
+</Project>

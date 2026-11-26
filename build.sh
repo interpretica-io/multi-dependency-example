@@ -78,6 +78,7 @@ clean() {
     # Anything the tools do not own.
     rm -rf "$ROOT/cpp/build" "$ROOT/dist" \
            "$ROOT/csharp/bin" "$ROOT/csharp/obj" "$ROOT/csharp/out" \
+           "$ROOT/csharp/demo/bin" "$ROOT/csharp/demo/obj" "$ROOT/csharp/demo/out" \
            "$ROOT/web/service-cs/bin" "$ROOT/web/service-cs/obj" \
            "$ROOT/web/service-cs/out" \
            "$ROOT/web/service-ts/out" "$ROOT/web/service-ts/node_modules" \
@@ -161,6 +162,26 @@ if true; then
 fi
 cp "$ROOT/rust/target/release/rust-demo" "$DIST_BIN/"
 
+echo "==> [6/10] Go: go-demo"
+# Enters the ring at the Go stage; the ring libraries are linked in, so the
+# symbols libgocore leaves undefined (cpp_weight) bind to libcppcore.
+export CGO_LDFLAGS_ALLOW='-Wl,-(U|install_name|rpath),.*|-Wl,--unresolved-symbols=.*'
+export CGO_LDFLAGS="-L$DIST_LIB -lgocore -lcppcore -lrustcore -lcscore -lpycore -Wl,-rpath,$DIST_LIB"
+(cd "$ROOT/go" && go build -o "$DIST_BIN/go-demo" ./demo)
+unset CGO_LDFLAGS
+
+if [ -n "${RING_SKIP_CSHARP:-}" ]; then
+echo "==> [6/10] C#: SKIPPED -- cs-demo needs the .NET toolchain (RING_SKIP_CSHARP)"
+else
+echo "==> [6/10] C#: cs-demo"
+DEMO_CS_ARGS=(-c Release -o "$ROOT/csharp/demo/out" --nologo -v quiet -r "$DOTNET_RID" -p:DistLib="$DIST_LIB")
+if [ "$DYLIB_EXT" = "dylib" ]; then
+    DEMO_CS_ARGS+=(-p:CppCompilerAndLinker=/usr/bin/clang)
+fi
+dotnet publish "$ROOT/csharp/demo/csdemo.csproj" "${DEMO_CS_ARGS[@]}"
+cp "$ROOT/csharp/demo/out/cs-demo" "$DIST_BIN/"
+fi
+
 echo "==> [7/10] Rust: gateway-rs (web tier)"
 # The gateway links librustcore for its FFI edge and libcppcore only so that
 # cpp_weight -- left undefined inside libgocore -- has an image to bind to.
@@ -208,13 +229,15 @@ ls -1 "$DIST_LIB" "$DIST_BIN"
 echo
 echo "Run:  ./dist/bin/cpp-demo    [value] [hops]"
 echo "      ./dist/bin/rust-demo   [value] [hops]"
+echo "      ./dist/bin/go-demo     [value] [hops]"
+echo "      ./dist/bin/cs-demo     [value] [hops]"
 echo "      python3 python/demo.py [value] [hops]"
 echo
 echo "Web tier (each in its own shell, then probe them):"
 echo "      ./dist/bin/gateway-rs"
 echo "      ./dist/bin/service-go"
 echo "      ./dist/bin/service-cs"
-echo "      ./dist/bin/service-ts   (SERVICE_TS_HOST / SERVICE_TS_PORT, default 127.0.0.1:8084)"
+echo "      ./dist/bin/service-ts   (RING_HOST / RING_PORT, both required)"
 echo "      node ts/dist/demo.js   [value] [hops]"
 echo "      (cd ts && node dist/main.js)   (RING_HOST / RING_PORT, both required)"
 echo "      python3 web/tools/probe.py [service] [value] [hops]"
