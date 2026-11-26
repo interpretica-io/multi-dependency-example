@@ -304,7 +304,7 @@ starting with `error:`; nothing thrown while serving ends the process.
 `ts/` is a sixth language example: `ts/src/core.ts` holds the guess logic (the
 five ring stages with the same formulas and weights, run in one process),
 `ts/src/demo.ts` is the demo entry point, and `ts/src/main.ts` is the HTTP
-variant (`EXAMPLE_HOST` / `EXAMPLE_PORT`). Strict mode is on in
+variant (`RING_HOST` and `RING_PORT`, both required: if one is unset it prints one error line and exits 1; every request has a 5 s timeout). Strict mode is on in
 `ts/tsconfig.json`; `./build.sh` compiles it with `tsc`.
 
 ```sh

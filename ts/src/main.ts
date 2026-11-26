@@ -1,29 +1,33 @@
 // TypeScript example: GET /ring with the same contract and reply format as
 // service-go and service-cs (value, hops; defaults 1.0 and 6).
 //
-// EXAMPLE_HOST (default 127.0.0.1) and EXAMPLE_PORT (default 9100) set the
-// listen address. Empty, non-numeric or oversized input gets an error reply
+// RING_HOST and RING_PORT set the listen address; both are required and an
+// unset one prints one error line and exits 1. Empty, non-numeric or oversized input gets an error reply
 // and the server keeps running. SIGTERM and SIGINT exit 0.
 
 import * as http from "node:http";
 import { route } from "./handler";
 
-const DEFAULT_HOST = "127.0.0.1";
-const DEFAULT_PORT = 9100;
+const TIMEOUT_MS = 5000;
+
+function requireEnv(name: string): string {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") {
+    throw new Error(`${name} is not set`);
+  }
+  return raw;
+}
 
 function listenPort(): number {
-  const raw = process.env.EXAMPLE_PORT;
-  if (raw === undefined || raw === "") {
-    return DEFAULT_PORT;
-  }
+  const raw = requireEnv("RING_PORT");
   if (!/^\d{1,5}$/.test(raw) || Number(raw) > 65535) {
-    throw new Error(`EXAMPLE_PORT="${raw}" is not a port number`);
+    throw new Error(`RING_PORT="${raw.slice(0, 40)}" is not a port number`);
   }
   return Number(raw);
 }
 
 function main(): void {
-  const host = process.env.EXAMPLE_HOST || DEFAULT_HOST;
+  const host = requireEnv("RING_HOST");
   const port = listenPort();
 
   const server = http.createServer((req, res) => {
@@ -38,7 +42,10 @@ function main(): void {
       })
       .catch(() => res.destroy());
   });
-  server.headersTimeout = 5000;
+  server.headersTimeout = TIMEOUT_MS;
+  server.requestTimeout = TIMEOUT_MS;
+  server.timeout = TIMEOUT_MS;
+  server.keepAliveTimeout = TIMEOUT_MS;
   server.on("clientError", (_err, socket) => {
     if (socket.writable) {
       const body = "error: bad request\n";
@@ -49,8 +56,7 @@ function main(): void {
     }
   });
   server.on("error", (err) => {
-    console.error(`[example-ts] listen ${host}:${port} failed: ${err.message}`);
-    process.exit(1);
+    fail(new Error(`listen ${host}:${port} failed: ${err.message}`));
   });
 
   const stop = (): void => {
@@ -61,20 +67,21 @@ function main(): void {
   process.on("SIGINT", stop);
 
   server.listen(port, host, () => {
-    console.log(`[example-ts] http://${host}:${port}/ring`);
+    console.log(`[example-ts] listening on ${host}:${port} path /ring`);
   });
 }
 
-process.on("uncaughtException", (err) => {
-  console.error(`[example-ts] uncaught: ${err.message}`);
-});
-process.on("unhandledRejection", (err) => {
-  console.error(`[example-ts] unhandled rejection: ${String(err)}`);
-});
+function fail(err: unknown): never {
+  const msg = err instanceof Error ? err.message : String(err);
+  console.error(`[example-ts] error: ${msg.split("\n")[0]}`);
+  process.exit(1);
+}
+
+process.on("uncaughtException", fail);
+process.on("unhandledRejection", fail);
 
 try {
   main();
 } catch (e) {
-  console.error(`[example-ts] ${e instanceof Error ? e.message : String(e)}`);
-  process.exit(1);
+  fail(e);
 }

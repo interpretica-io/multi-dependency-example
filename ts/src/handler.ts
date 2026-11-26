@@ -75,21 +75,21 @@ export async function handle(value: number, hops: number, forward: Forward | nul
 }
 
 export async function route(target: string, method: string, forward: Forward | null): Promise<Reply> {
-  let url: URL;
-  try {
-    url = new URL(target, "http://localhost");
-  } catch {
+  if (!target.startsWith("/") || target.startsWith("//")) {
     return { status: 400, body: "error: malformed request target\n" };
   }
-  if (url.pathname !== "/ring") {
+  const cut = target.indexOf("?");
+  const pathname = cut < 0 ? target : target.slice(0, cut);
+  const params = new URLSearchParams(cut < 0 ? "" : target.slice(cut + 1));
+  if (pathname !== "/ring") {
     return { status: 404, body: "error: not found\n" };
   }
   if (method !== "GET" && method !== "HEAD") {
     return { status: 405, body: "error: method not allowed\n" };
   }
   try {
-    const value = parseValue(url.searchParams.get("value"));
-    const hops = parseHops(url.searchParams.get("hops"));
+    const value = parseValue(params.get("value"));
+    const hops = parseHops(params.get("hops"));
     return { status: 200, body: await handle(value, hops, forward) };
   } catch (e) {
     if (e instanceof BadInput) {

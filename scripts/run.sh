@@ -7,7 +7,7 @@
 #   ./scripts/run.sh guess serve       the ts example as an HTTP server (node dist/main.js)
 #   ./scripts/run.sh guess <service>   build if needed, run the named web-tier service
 #
-# The ts server reads EXAMPLE_HOST / EXAMPLE_PORT (default 127.0.0.1:9100).
+# The ts server reads RING_HOST / RING_PORT (both required).
 #
 # The TypeScript node reads SERVICE_TS_HOST / SERVICE_TS_PORT
 # (default 127.0.0.1:8084).
