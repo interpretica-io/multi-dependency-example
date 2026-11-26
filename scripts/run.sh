@@ -7,7 +7,7 @@
 #   ./scripts/run.sh guess serve       the ts example as an HTTP server (node dist/main.js)
 #   ./scripts/run.sh guess <service>   build if needed, run the named web-tier service
 #
-# The ts server reads RING_HOST / RING_PORT (both required).
+# The ts demo and the ts server read RING_HOST / RING_PORT (both required).
 #
 # The TypeScript node (service-ts) reads RING_HOST / RING_PORT too (both
 # required).
@@ -42,6 +42,7 @@ case "${1:-}" in
                 exec node dist/main.js
                 ;;
             *)
+                need_ring_env
                 if [ ! -f "$ROOT/ts/dist/demo.js" ]; then
                     "$ROOT/build.sh"
                 fi

@@ -2,8 +2,12 @@
 //
 //   node dist/demo.js [value] [hops]
 //
+// RING_HOST and RING_PORT are required, as for the HTTP server: if one is
+// unset the demo prints one error line and exits 1.
+//
 // Bad input prints one error line to stderr and exits 1.
 
+import { listenPort, requireEnv } from "./env";
 import { DEFAULT_HOPS, DEFAULT_VALUE, parseHops, parseValue, runRing } from "./core";
 
 function run(argv: string[]): number {
@@ -12,6 +16,8 @@ function run(argv: string[]): number {
     return 1;
   }
   try {
+    requireEnv("RING_HOST");
+    listenPort();
     const value = argv[0] === undefined ? DEFAULT_VALUE : parseValue(argv[0]);
     const hops = argv[1] === undefined ? DEFAULT_HOPS : parseHops(argv[1]);
     const { trace, result } = runRing(value, hops);

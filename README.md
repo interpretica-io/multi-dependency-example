@@ -316,13 +316,26 @@ whatever starts the process, not from the service.
 `ts/` is a sixth language example: `ts/src/core.ts` holds the guess logic (the
 five ring stages with the same formulas and weights, run in one process),
 `ts/src/demo.ts` is the demo entry point, and `ts/src/main.ts` is the HTTP
-variant (`RING_HOST` and `RING_PORT`, both required: if one is unset it prints one error line and exits 1; every request has a 5 s timeout). Strict mode is on in
-`ts/tsconfig.json`; `./build.sh` compiles it with `tsc`.
+variant. Both read `RING_HOST` and `RING_PORT`, and both are required: if one is
+unset the demo and the server print one error line and exit 1 (the demo does
+not listen on them; it only checks them, as the server does). Every HTTP request
+has a 5 s timeout. Strict mode is on in `ts/tsconfig.json`; `./build.sh`
+compiles it with `tsc`.
 
 ```sh
+export RING_HOST=127.0.0.1 RING_PORT=9100   # required, no defaults
 ./scripts/run.sh guess 1 7     # prints the same trace and result as cpp-demo 1 7
 ./scripts/run.sh guess serve   # the HTTP variant
 ```
+
+`./scripts/run.sh guess` without arguments uses the defaults value `1.0` and
+`6` hops. The ring runs `hops + 1` stages (the stage that sees hops `0` still
+runs), so it prints 7 stages and ends at `17.6799`, the Go stage with hops=0;
+the output of `guess 42 3` is 4 stages ending at `38.9640`. Both agree with
+the stage formulas and with `cpp-demo`, `rust-demo` and `python3 python/demo.py`
+for the same input and entry point. Different entry points give different
+first lines (cpp-demo starts at the Rust stage, rust-demo and demo.py at the
+C++ stage), so compare runs with the same entry only.
 
 `value` must be a finite number and `hops` an integer from 0 to 64; anything
 else prints one `ts-demo: error:` line to stderr and exits with code 1.

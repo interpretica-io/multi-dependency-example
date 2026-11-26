@@ -6,25 +6,10 @@
 // and the server keeps running. SIGTERM and SIGINT exit 0.
 
 import * as http from "node:http";
+import { listenPort, requireEnv } from "./env";
 import { route } from "./handler";
 
 const TIMEOUT_MS = 5000;
-
-function requireEnv(name: string): string {
-  const raw = process.env[name];
-  if (raw === undefined || raw === "") {
-    throw new Error(`${name} is not set`);
-  }
-  return raw;
-}
-
-function listenPort(): number {
-  const raw = requireEnv("RING_PORT");
-  if (!/^\d{1,5}$/.test(raw) || Number(raw) > 65535) {
-    throw new Error(`RING_PORT="${raw.slice(0, 40)}" is not a port number`);
-  }
-  return Number(raw);
-}
 
 function main(): void {
   const host = requireEnv("RING_HOST");
