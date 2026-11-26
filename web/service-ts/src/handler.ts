@@ -5,7 +5,9 @@
 //
 // Defaults: value=1.0, hops=6. Unlike the Go node, unparsable input is not
 // silently replaced by the default: it is answered with 400 and a line that
-// starts with "error:".
+// starts with "error:". When the upstream fails the node does not invent a
+// value: it answers 504 (timeout) or 502 (anything else) with a JSON body
+// {"error": "..."}.
 
 export const DEFAULT_VALUE = 1.0;
 export const DEFAULT_HOPS = 6;
@@ -17,6 +19,18 @@ export const TS_WEIGHT = 1.0;
 export interface Reply {
   status: number;
   body: string;
+  contentType?: string;
+}
+
+// The upstream could not give a usable answer: 504 when it timed out, 502
+// for every other failure (refused, reset, non-2xx, malformed reply).
+export class UpstreamError extends Error {
+  readonly status: number;
+  constructor(cause: unknown) {
+    const msg = cause instanceof Error ? cause.message : String(cause);
+    super(msg.split("\n")[0]!.slice(0, 200));
+    this.status = /timed out/.test(msg) ? 504 : 502;
+  }
 }
 
 export type Forward = (value: number, hops: number) => Promise<{ value: number; trace: string }>;
@@ -63,13 +77,14 @@ export async function handle(value: number, hops: number, forward: Forward | nul
 
   let result = next;
   if (hops > 0 && forward !== null) {
+    let up;
     try {
-      const up = await forward(next, hops - 1);
-      body += up.trace;
-      result = up.value;
+      up = await forward(next, hops - 1);
     } catch (e) {
-      body += `[service-ts] upstream unreachable: ${e instanceof Error ? e.message : String(e)}\n`;
+      throw new UpstreamError(e);
     }
+    body += up.trace;
+    result = up.value;
   }
   return body + `value=${result}\n`;
 }
@@ -92,6 +107,13 @@ export async function route(target: string, method: string, forward: Forward | n
     const hops = parseHops(params.get("hops"));
     return { status: 200, body: await handle(value, hops, forward) };
   } catch (e) {
+    if (e instanceof UpstreamError) {
+      return {
+        status: e.status,
+        body: JSON.stringify({ error: `upstream failed: ${e.message}` }) + "\n",
+        contentType: "application/json",
+      };
+    }
     if (e instanceof BadInput) {
       return { status: 400, body: `error: ${e.message}\n` };
     }

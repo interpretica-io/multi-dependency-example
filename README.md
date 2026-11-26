@@ -96,7 +96,8 @@ dependencies on the ring at all:
 
 * Python calls `ctypes.CDLL(None)`. This opens the process itself, so any ring
   symbol that is already loaded is available by name.
-* C# calls `dlsym(RTLD_DEFAULT, "...")` and invokes the result through
+* C# calls `dlsym(RTLD_DEFAULT, "...")` (imported from `libSystem.dylib` on
+  macOS and from `libdl.so.2` on Linux) and invokes the result through
   `delegate* unmanaged[Cdecl]`, so no path has to be hard-coded in
   `[DllImport]`.
 
@@ -296,6 +297,15 @@ port from the contract) and `SERVICE_TS_CONTRACT`. Every network call has a
 5 s connect timeout and a 5 s read timeout. Bad `value`/`hops` get a `400`
 reply starting with `error:`; nothing thrown while serving a request ends the
 process, and any other error prints one line and exits 1.
+
+When the upstream fails (refused, reset, a non-2xx answer, a malformed reply)
+the node answers `502`, and `504` when it timed out after 5 s. The body is
+JSON with an `error` field, e.g. `{"error":"upstream failed: timed out"}`.
+There is no fallback value: a reply with status 200 always carries a real
+result. `RING_HOST` and `RING_PORT` are required, there is no default address;
+when one is missing the process exits at once (about 0.3 s) with
+`RING_HOST is not set`. Any longer wait seen before that line comes from
+whatever starts the process, not from the service.
 
 ```sh
 ./scripts/run.sh guess              # builds if needed, runs service-ts

@@ -12,7 +12,7 @@
 
 import * as http from "node:http";
 import { findService, loadContract } from "./contract";
-import { Forward, route } from "./handler";
+import { Forward, Reply, route } from "./handler";
 
 const TIMEOUT_MS = 5000;
 const DEFAULT_UPSTREAM = "gateway-rs";
@@ -101,10 +101,10 @@ function main(): void {
 
   const server = http.createServer((req, res) => {
     route(req.url ?? "/", req.method ?? "GET", forward)
-      .catch(() => ({ status: 500, body: "error: internal\n" }))
+      .catch((): Reply => ({ status: 500, body: "error: internal\n" }))
       .then((reply) => {
         res.writeHead(reply.status, {
-          "Content-Type": "text/plain",
+          "Content-Type": reply.contentType ?? "text/plain",
           "Content-Length": Buffer.byteLength(reply.body),
         });
         res.end(req.method === "HEAD" ? undefined : reply.body);
