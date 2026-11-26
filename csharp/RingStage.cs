@@ -20,8 +20,12 @@ internal static unsafe class RingStage
     private static IntPtr dlsym(IntPtr handle, string symbol) =>
         OperatingSystem.IsMacOS() ? dlsymMac(handle, symbol) : dlsymLinux(handle, symbol);
 
-    /// <summary>Search every image loaded into the process.</summary>
-    private static readonly IntPtr RtldDefault = new(-2);
+    /// <summary>
+    /// Search every image loaded into the process. The pseudo-handle differs:
+    /// RTLD_DEFAULT is -2 on macOS but NULL on glibc, where -2 is an invalid
+    /// handle and makes dlsym fault.
+    /// </summary>
+    private static readonly IntPtr RtldDefault = OperatingSystem.IsMacOS() ? new IntPtr(-2) : IntPtr.Zero;
 
     // Ring edge: cs -> py.
     private static delegate* unmanaged[Cdecl]<double, int, double> _pyStep;
