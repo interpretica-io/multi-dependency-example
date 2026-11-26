@@ -10,8 +10,15 @@ using System.Runtime.InteropServices;
 
 internal static unsafe class RingStage
 {
-    [DllImport("libSystem.dylib")]
-    private static extern IntPtr dlsym(IntPtr handle, string symbol);
+    [DllImport("libSystem.dylib", EntryPoint = "dlsym")]
+    private static extern IntPtr dlsymMac(IntPtr handle, string symbol);
+
+    // glibc keeps dlsym reachable through libdl.so.2 on every version.
+    [DllImport("libdl.so.2", EntryPoint = "dlsym")]
+    private static extern IntPtr dlsymLinux(IntPtr handle, string symbol);
+
+    private static IntPtr dlsym(IntPtr handle, string symbol) =>
+        OperatingSystem.IsMacOS() ? dlsymMac(handle, symbol) : dlsymLinux(handle, symbol);
 
     /// <summary>Search every image loaded into the process.</summary>
     private static readonly IntPtr RtldDefault = new(-2);
