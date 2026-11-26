@@ -298,3 +298,19 @@ starting with `error:`; nothing thrown while serving ends the process.
 ```sh
 ./scripts/run.sh guess              # builds if needed, runs service-ts
 ```
+
+### TypeScript example
+
+`ts/` is a sixth language example: `ts/src/core.ts` holds the guess logic (the
+five ring stages with the same formulas and weights, run in one process),
+`ts/src/demo.ts` is the demo entry point, and `ts/src/main.ts` is the HTTP
+variant (`EXAMPLE_HOST` / `EXAMPLE_PORT`). Strict mode is on in
+`ts/tsconfig.json`; `./build.sh` compiles it with `tsc`.
+
+```sh
+./scripts/run.sh guess 1 7     # prints the same trace and result as cpp-demo 1 7
+./scripts/run.sh guess serve   # the HTTP variant
+```
+
+`value` must be a finite number and `hops` an integer from 0 to 64; anything
+else prints one `ts-demo: error:` line to stderr and exits with code 1.
